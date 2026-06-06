@@ -3,7 +3,9 @@ import dotenv from 'dotenv'
 import express from 'express'
 import morgan from 'morgan'
 
+import authRoutes from './routes/auth.routes.js'
 import healthRoutes from './routes/health.routes.js'
+import { errorHandler } from './middleware/errorHandler.js'
 
 dotenv.config()
 
@@ -15,9 +17,12 @@ app.use(express.urlencoded({ extended: true }))
 app.use(morgan('dev'))
 
 app.use('/api/health', healthRoutes)
+app.use('/api/auth', authRoutes)
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' })
 })
+
+app.use(errorHandler)
 
 export default app
