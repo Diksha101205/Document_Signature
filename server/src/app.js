@@ -4,6 +4,7 @@ import express from 'express'
 import morgan from 'morgan'
 
 import authRoutes from './routes/auth.routes.js'
+import documentRoutes from './routes/document.routes.js'
 import healthRoutes from './routes/health.routes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
@@ -18,6 +19,7 @@ app.use(morgan('dev'))
 
 app.use('/api/health', healthRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/docs', documentRoutes)
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' })

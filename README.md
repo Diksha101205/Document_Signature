@@ -19,6 +19,13 @@ Development internship project.
 - Added protected route middleware that validates tokens and loads the user
 - Added `/api/auth/me` as a protected route example
 
+## Day 3 Completed
+
+- Added protected PDF upload API route
+- Configured Multer to accept PDF files only
+- Stored uploaded file path and metadata in MongoDB
+- Added upload error handling for invalid file types and Multer limits
+
 ## Tech Stack
 
 - Frontend: React, Vite, Tailwind CSS
@@ -81,3 +88,16 @@ POST /api/auth/login
 GET /api/auth/me
 Authorization: Bearer <token>
 ```
+
+## Document Upload API
+
+```http
+POST /api/docs/upload
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+Form fields:
+
+- `document`: PDF file
+- `title`: optional document title

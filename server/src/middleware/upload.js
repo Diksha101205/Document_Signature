@@ -1,8 +1,10 @@
 import multer from 'multer'
 import path from 'path'
 
+const uploadDirectory = 'uploads/'
+
 const storage = multer.diskStorage({
-  destination: 'uploads/',
+  destination: uploadDirectory,
   filename: (req, file, cb) => {
     const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`
     cb(null, uniqueName)
@@ -20,3 +22,5 @@ export const uploadPdf = multer({
     cb(null, true)
   },
 })
+
+export { uploadDirectory }
