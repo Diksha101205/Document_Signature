@@ -26,6 +26,21 @@ Development internship project.
 - Stored uploaded file path and metadata in MongoDB
 - Added upload error handling for invalid file types and Multer limits
 
+## Day 4 Completed
+
+- Added API to fetch the authenticated user's uploaded files
+- Added API to fetch one owned document by id
+- Served uploaded PDFs from the Express server for preview
+- Added React dashboard to display uploaded documents
+- Added PDF preview support with `react-pdf`
+
+## Day 5 Completed
+
+- Added Signature model with file relation, coordinates, signer, and status
+- Added API to save signature positions on a document
+- Added API to list signature placeholders for a document
+- Added position-based signature placeholder rendering on the PDF dashboard
+
 ## Tech Stack
 
 - Frontend: React, Vite, Tailwind CSS
@@ -101,3 +116,43 @@ Form fields:
 
 - `document`: PDF file
 - `title`: optional document title
+
+## Document List API
+
+```http
+GET /api/docs
+Authorization: Bearer <token>
+```
+
+## Single Document API
+
+```http
+GET /api/docs/:id
+Authorization: Bearer <token>
+```
+
+## Signature APIs
+
+```http
+POST /api/docs/:fileId/signatures
+Authorization: Bearer <token>
+```
+
+```json
+{
+  "signer": {
+    "name": "Client Name",
+    "email": "client@example.com"
+  },
+  "page": 1,
+  "x": 120,
+  "y": 240,
+  "width": 180,
+  "height": 56
+}
+```
+
+```http
+GET /api/docs/:fileId/signatures
+Authorization: Bearer <token>
+```

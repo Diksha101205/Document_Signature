@@ -1,0 +1,60 @@
+import Document from '../models/Document.js'
+import Signature from '../models/Signature.js'
+
+const ensureOwnedDocument = async (documentId, userId) => {
+  const document = await Document.findOne({ _id: documentId, owner: userId })
+
+  if (!document) {
+    const error = new Error('Document not found')
+    error.statusCode = 404
+    throw error
+  }
+
+  return document
+}
+
+export const listSignatures = async (req, res) => {
+  await ensureOwnedDocument(req.params.fileId, req.user._id)
+
+  const signatures = await Signature.find({ fileId: req.params.fileId }).sort({
+    createdAt: -1,
+  })
+
+  res.status(200).json({
+    count: signatures.length,
+    signatures,
+  })
+}
+
+export const saveSignaturePosition = async (req, res) => {
+  const { signer, x, y, page = 1, width = 180, height = 56 } = req.body
+
+  if (!signer?.email || x === undefined || y === undefined) {
+    return res.status(400).json({
+      message: 'Signer email, x coordinate, and y coordinate are required',
+    })
+  }
+
+  await ensureOwnedDocument(req.params.fileId, req.user._id)
+
+  const signature = await Signature.create({
+    fileId: req.params.fileId,
+    signer: {
+      name: signer.name || '',
+      email: signer.email,
+    },
+    coordinates: {
+      page,
+      x,
+      y,
+      width,
+      height,
+    },
+    status: 'pending',
+  })
+
+  res.status(201).json({
+    message: 'Signature position saved successfully',
+    signature,
+  })
+}
