@@ -22,7 +22,7 @@ app.use('/uploads', express.static('uploads'))
 app.use('/api/health', healthRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/docs', documentRoutes)
-app.use('/api/docs', signatureRoutes)
+app.use('/api/signatures', signatureRoutes)
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' })

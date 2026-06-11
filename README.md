@@ -156,3 +156,30 @@ Authorization: Bearer <token>
 GET /api/docs/:fileId/signatures
 Authorization: Bearer <token>
 ```
+
+## Day 6 Completed
+
+- Added top-level signature save route
+- Added drag-and-drop signature field placement in the PDF editor
+- Saved coordinates relative to the rendered PDF page
+- Kept document-scoped signature routes for compatibility
+
+```http
+POST /api/signatures
+Authorization: Bearer <token>
+```
+
+```json
+{
+  "fileId": "<document-id>",
+  "signer": {
+    "name": "Client Name",
+    "email": "client@example.com"
+  },
+  "page": 1,
+  "x": 120,
+  "y": 240,
+  "width": 180,
+  "height": 56
+}
+```

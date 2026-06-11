@@ -27,18 +27,20 @@ export const listSignatures = async (req, res) => {
 }
 
 export const saveSignaturePosition = async (req, res) => {
+  const fileId = req.params.fileId || req.body.fileId
   const { signer, x, y, page = 1, width = 180, height = 56 } = req.body
 
-  if (!signer?.email || x === undefined || y === undefined) {
+  if (!fileId || !signer?.email || x === undefined || y === undefined) {
     return res.status(400).json({
-      message: 'Signer email, x coordinate, and y coordinate are required',
+      message:
+        'File id, signer email, x coordinate, and y coordinate are required',
     })
   }
 
-  await ensureOwnedDocument(req.params.fileId, req.user._id)
+  await ensureOwnedDocument(fileId, req.user._id)
 
   const signature = await Signature.create({
-    fileId: req.params.fileId,
+    fileId,
     signer: {
       name: signer.name || '',
       email: signer.email,

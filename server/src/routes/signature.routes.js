@@ -8,7 +8,7 @@ import { authenticate } from '../middleware/auth.js'
 
 const router = Router()
 
-router.get('/:fileId/signatures', authenticate, listSignatures)
-router.post('/:fileId/signatures', authenticate, saveSignaturePosition)
+router.post('/', authenticate, saveSignaturePosition)
+router.get('/:fileId', authenticate, listSignatures)
 
 export default router
