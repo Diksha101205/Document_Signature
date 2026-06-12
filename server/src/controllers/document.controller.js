@@ -1,5 +1,7 @@
 import path from 'path'
 
+import mongoose from 'mongoose'
+
 import Document from '../models/Document.js'
 
 const normalizePath = (filePath) => filePath.replace(/\\/g, '/')
@@ -62,6 +64,10 @@ export const listDocuments = async (req, res) => {
 }
 
 export const getDocumentById = async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid document id' })
+  }
+
   const document = await Document.findOne({
     _id: req.params.id,
     owner: req.user._id,

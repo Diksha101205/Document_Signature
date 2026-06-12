@@ -1,7 +1,15 @@
+import mongoose from 'mongoose'
+
 import Document from '../models/Document.js'
 import Signature from '../models/Signature.js'
 
 const ensureOwnedDocument = async (documentId, userId) => {
+  if (!mongoose.Types.ObjectId.isValid(documentId)) {
+    const error = new Error('Invalid document id')
+    error.statusCode = 400
+    throw error
+  }
+
   const document = await Document.findOne({ _id: documentId, owner: userId })
 
   if (!document) {
@@ -29,11 +37,24 @@ export const listSignatures = async (req, res) => {
 export const saveSignaturePosition = async (req, res) => {
   const fileId = req.params.fileId || req.body.fileId
   const { signer, x, y, page = 1, width = 180, height = 56 } = req.body
+  const numericCoordinates = {
+    page: Number(page),
+    x: Number(x),
+    y: Number(y),
+    width: Number(width),
+    height: Number(height),
+  }
 
   if (!fileId || !signer?.email || x === undefined || y === undefined) {
     return res.status(400).json({
       message:
         'File id, signer email, x coordinate, and y coordinate are required',
+    })
+  }
+
+  if (Object.values(numericCoordinates).some((value) => Number.isNaN(value))) {
+    return res.status(400).json({
+      message: 'Signature coordinates must be numbers',
     })
   }
 
@@ -45,13 +66,7 @@ export const saveSignaturePosition = async (req, res) => {
       name: signer.name || '',
       email: signer.email,
     },
-    coordinates: {
-      page,
-      x,
-      y,
-      width,
-      height,
-    },
+    coordinates: numericCoordinates,
     status: 'pending',
   })
 

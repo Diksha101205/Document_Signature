@@ -164,6 +164,13 @@ Authorization: Bearer <token>
 - Saved coordinates relative to the rendered PDF page
 - Kept document-scoped signature routes for compatibility
 
+## Day 7 Completed
+
+- Debugged frontend and backend integration points
+- Added safer validation for invalid document ids
+- Normalized signature coordinate values before saving
+- Added Postman collection and local environment for API testing
+
 ```http
 POST /api/signatures
 Authorization: Bearer <token>
@@ -183,3 +190,13 @@ Authorization: Bearer <token>
   "height": 56
 }
 ```
+
+## Postman Tests
+
+Postman files are available in the `postman` folder:
+
+- `postman/Document-Signature-App.postman_collection.json`
+- `postman/Document-Signature-App.postman_environment.json`
+
+Import both files into Postman, select the local environment, start the backend,
+and choose a local PDF file in the upload request before running the collection.
