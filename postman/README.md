@@ -16,7 +16,8 @@ Run order:
 7. Get Single Document
 8. Save Signature Position
 9. List Signatures
+10. Generate Signed PDF
 
 Before running the upload request, choose a local PDF file in the `document`
 form-data field. The collection stores `authToken`, `documentId`, `previewUrl`,
-and `signatureId` automatically for later requests.
+`signedPreviewUrl`, and `signatureId` automatically for later requests.

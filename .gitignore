@@ -3,4 +3,9 @@ dist/
 .env
 uploads/*
 !uploads/.gitkeep
+server/uploads/*
+!server/uploads/.gitkeep
+!server/uploads/signed/
+server/uploads/signed/*
+!server/uploads/signed/.gitkeep
 npm-debug.log*

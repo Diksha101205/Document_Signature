@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import {
+  generateSignedPdf,
   getDocumentById,
   listDocuments,
   uploadDocument,
@@ -16,6 +17,7 @@ const router = Router()
 
 router.get('/', authenticate, listDocuments)
 router.post('/upload', authenticate, uploadPdf.single('document'), uploadDocument)
+router.post('/:id/generate-signed-pdf', authenticate, generateSignedPdf)
 router.get('/:fileId/signatures', authenticate, listSignatures)
 router.post('/:fileId/signatures', authenticate, saveSignaturePosition)
 router.get('/:id', authenticate, getDocumentById)

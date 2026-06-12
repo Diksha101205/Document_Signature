@@ -200,3 +200,15 @@ Postman files are available in the `postman` folder:
 
 Import both files into Postman, select the local environment, start the backend,
 and choose a local PDF file in the upload request before running the collection.
+
+## Day 8 Completed
+
+- Added signed PDF generation with PDF-Lib
+- Embedded saved signature positions into the PDF
+- Exported signed PDFs to `server/uploads/signed`
+- Updated document status and signed file URL after generation
+
+```http
+POST /api/docs/:id/generate-signed-pdf
+Authorization: Bearer <token>
+```

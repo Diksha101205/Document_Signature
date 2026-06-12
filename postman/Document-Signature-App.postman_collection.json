@@ -302,6 +302,37 @@
           }
         }
       ]
+    },
+    {
+      "name": "Generate Signed PDF",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/docs/{{documentId}}/generate-signed-pdf",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "docs", "{{documentId}}", "generate-signed-pdf"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('signed pdf generation returns 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('signed preview url is returned', () => pm.expect(json.document.signedPreviewUrl).to.be.a('string').and.not.empty);",
+              "pm.collectionVariables.set('signedPreviewUrl', json.document.signedPreviewUrl);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
     }
   ],
   "variable": [
@@ -331,6 +362,10 @@
     },
     {
       "key": "previewUrl",
+      "value": ""
+    },
+    {
+      "key": "signedPreviewUrl",
       "value": ""
     },
     {
