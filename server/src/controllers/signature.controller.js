@@ -1,7 +1,12 @@
 import mongoose from 'mongoose'
+import crypto from 'crypto'
 
 import Document from '../models/Document.js'
 import Signature from '../models/Signature.js'
+import { sendMockSignatureEmail } from '../services/mockEmail.service.js'
+
+const hashToken = (token) =>
+  crypto.createHash('sha256').update(token).digest('hex')
 
 const ensureOwnedDocument = async (documentId, userId) => {
   if (!mongoose.Types.ObjectId.isValid(documentId)) {
@@ -73,5 +78,43 @@ export const saveSignaturePosition = async (req, res) => {
   res.status(201).json({
     message: 'Signature position saved successfully',
     signature,
+  })
+}
+
+export const sendSignatureLink = async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid signature id' })
+  }
+
+  const signature = await Signature.findById(req.params.id)
+
+  if (!signature) {
+    return res.status(404).json({ message: 'Signature not found' })
+  }
+
+  const document = await ensureOwnedDocument(signature.fileId, req.user._id)
+  const token = crypto.randomBytes(32).toString('hex')
+  const tokenHash = hashToken(token)
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  const publicAppUrl = process.env.PUBLIC_APP_URL || process.env.CLIENT_URL
+  const signingUrl = `${publicAppUrl}/sign/${token}`
+
+  signature.signingTokenHash = tokenHash
+  signature.signingTokenExpiresAt = expiresAt
+  signature.signingLinkSentAt = new Date()
+  await signature.save()
+
+  const email = await sendMockSignatureEmail({
+    to: signature.signer.email,
+    signerName: signature.signer.name,
+    documentTitle: document.title,
+    signingUrl,
+  })
+
+  res.status(200).json({
+    message: 'Signature link generated and mock email queued',
+    signingUrl,
+    expiresAt,
+    email,
   })
 }

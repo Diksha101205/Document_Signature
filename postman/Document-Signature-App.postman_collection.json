@@ -304,6 +304,64 @@
       ]
     },
     {
+      "name": "Send Signature Link",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/signatures/{{signatureId}}/send-link",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "signatures", "{{signatureId}}", "send-link"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('send link returns 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('signing url is returned', () => pm.expect(json.signingUrl).to.be.a('string').and.not.empty);",
+              "pm.collectionVariables.set('signingUrl', json.signingUrl);",
+              "const token = json.signingUrl.split('/').pop();",
+              "pm.collectionVariables.set('signingToken', token);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Signature Link Lookup",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/public/signatures/{{signingToken}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "public", "signatures", "{{signingToken}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('public lookup returns 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('public lookup returns signer', () => pm.expect(json.signature.signer.email).to.eql(pm.collectionVariables.get('signerEmail')));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
       "name": "Generate Signed PDF",
       "request": {
         "method": "POST",
@@ -378,6 +436,14 @@
     },
     {
       "key": "signatureId",
+      "value": ""
+    },
+    {
+      "key": "signingUrl",
+      "value": ""
+    },
+    {
+      "key": "signingToken",
       "value": ""
     }
   ]

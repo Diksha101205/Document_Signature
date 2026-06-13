@@ -212,3 +212,20 @@ and choose a local PDF file in the upload request before running the collection.
 POST /api/docs/:id/generate-signed-pdf
 Authorization: Bearer <token>
 ```
+
+## Day 9 Completed
+
+- Added tokenized public signature links
+- Stored hashed signing tokens with expiry
+- Added mock email sender that logs signing emails to `server/logs`
+- Added protected route to send a signer link
+- Added public route to fetch signature request details by token
+
+```http
+POST /api/signatures/:id/send-link
+Authorization: Bearer <token>
+```
+
+```http
+GET /api/public/signatures/:token
+```

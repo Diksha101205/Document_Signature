@@ -8,4 +8,6 @@ server/uploads/*
 !server/uploads/signed/
 server/uploads/signed/*
 !server/uploads/signed/.gitkeep
+server/logs/*
+!server/logs/.gitkeep
 npm-debug.log*

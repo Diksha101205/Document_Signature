@@ -55,6 +55,14 @@ const signatureSchema = new mongoose.Schema(
       enum: ['pending', 'signed', 'rejected'],
       default: 'pending',
     },
+    signingTokenHash: {
+      type: String,
+      unique: true,
+      sparse: true,
+      select: false,
+    },
+    signingTokenExpiresAt: Date,
+    signingLinkSentAt: Date,
   },
   { timestamps: true }
 )
