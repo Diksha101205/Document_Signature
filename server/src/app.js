@@ -3,12 +3,14 @@ import dotenv from 'dotenv'
 import express from 'express'
 import morgan from 'morgan'
 
+import auditRoutes from './routes/audit.routes.js'
 import authRoutes from './routes/auth.routes.js'
 import documentRoutes from './routes/document.routes.js'
 import healthRoutes from './routes/health.routes.js'
 import publicSignatureRoutes from './routes/publicSignature.routes.js'
 import signatureRoutes from './routes/signature.routes.js'
 import { errorHandler } from './middleware/errorHandler.js'
+import { attachRequestContext } from './middleware/requestContext.js'
 
 dotenv.config()
 
@@ -18,9 +20,11 @@ app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(morgan('dev'))
+app.use(attachRequestContext)
 app.use('/uploads', express.static('uploads'))
 
 app.use('/api/health', healthRoutes)
+app.use('/api/audit', auditRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/docs', documentRoutes)
 app.use('/api/signatures', signatureRoutes)

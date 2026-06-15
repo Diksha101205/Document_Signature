@@ -55,6 +55,8 @@ const signatureSchema = new mongoose.Schema(
       enum: ['pending', 'signed', 'rejected'],
       default: 'pending',
     },
+    signedAt: Date,
+    signedIpAddress: String,
     signingTokenHash: {
       type: String,
       unique: true,

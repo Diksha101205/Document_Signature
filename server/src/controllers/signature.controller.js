@@ -3,6 +3,7 @@ import crypto from 'crypto'
 
 import Document from '../models/Document.js'
 import Signature from '../models/Signature.js'
+import { createAuditLog } from '../services/audit.service.js'
 import { sendMockSignatureEmail } from '../services/mockEmail.service.js'
 
 const hashToken = (token) =>
@@ -109,6 +110,18 @@ export const sendSignatureLink = async (req, res) => {
     signerName: signature.signer.name,
     documentTitle: document.title,
     signingUrl,
+  })
+
+  await createAuditLog({
+    document: document._id,
+    actorEmail: req.user.email,
+    action: 'sent',
+    req,
+    metadata: {
+      signatureId: signature._id,
+      signerEmail: signature.signer.email,
+      expiresAt,
+    },
   })
 
   res.status(200).json({

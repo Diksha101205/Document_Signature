@@ -391,6 +391,69 @@
           }
         }
       ]
+    },
+    {
+      "name": "Public Sign Signature",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/public/signatures/{{signingToken}}/sign",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "public", "signatures", "{{signingToken}}", "sign"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('public sign returns 200 or already signed', () => pm.expect([200, 409]).to.include(pm.response.code));",
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  pm.test('signature status is signed', () => pm.expect(json.signature.status).to.eql('signed'));",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Audit Trail",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/audit/{{documentId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "audit", "{{documentId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('audit trail returns 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('audit trail is an array', () => pm.expect(json.auditTrail).to.be.an('array'));",
+              "pm.test('audit records include actor and action', () => {",
+              "  if (json.auditTrail.length > 0) {",
+              "    pm.expect(json.auditTrail[0]).to.have.property('actorEmail');",
+              "    pm.expect(json.auditTrail[0]).to.have.property('action');",
+              "  }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
     }
   ],
   "variable": [

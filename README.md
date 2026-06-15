@@ -229,3 +229,20 @@ Authorization: Bearer <token>
 ```http
 GET /api/public/signatures/:token
 ```
+
+## Day 10 Completed
+
+- Added request-context middleware for IP and user-agent capture
+- Added audit log service for consistent audit records
+- Logged document upload, signer-link sent, public link viewed, and signing events
+- Added public signing completion route
+- Added protected audit trail route
+
+```http
+POST /api/public/signatures/:token/sign
+```
+
+```http
+GET /api/audit/:fileId
+Authorization: Bearer <token>
+```

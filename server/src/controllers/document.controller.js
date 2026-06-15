@@ -6,6 +6,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 
 import Document from '../models/Document.js'
 import Signature from '../models/Signature.js'
+import { createAuditLog } from '../services/audit.service.js'
 
 const normalizePath = (filePath) => filePath.replace(/\\/g, '/')
 
@@ -54,6 +55,17 @@ export const uploadDocument = async (req, res) => {
     mimeType: req.file.mimetype,
     fileSize: req.file.size,
     status: 'draft',
+  })
+
+  await createAuditLog({
+    document: document._id,
+    actorEmail: req.user.email,
+    action: 'uploaded',
+    req,
+    metadata: {
+      fileName: req.file.originalname,
+      fileSize: req.file.size,
+    },
   })
 
   res.status(201).json({
@@ -181,6 +193,18 @@ export const generateSignedPdf = async (req, res) => {
     { fileId: document._id },
     { status: 'signed' }
   )
+
+  await createAuditLog({
+    document: document._id,
+    actorEmail: req.user.email,
+    action: 'signed',
+    req,
+    metadata: {
+      signedFileUrl: signedFilePath,
+      signatureCount: signatures.length,
+      generatedBy: 'owner',
+    },
+  })
 
   res.status(200).json({
     message: 'Signed PDF generated successfully',

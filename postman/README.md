@@ -19,6 +19,8 @@ Run order:
 10. Send Signature Link
 11. Public Signature Link Lookup
 12. Generate Signed PDF
+13. Public Sign Signature
+14. Get Audit Trail
 
 Before running the upload request, choose a local PDF file in the `document`
 form-data field. The collection stores `authToken`, `documentId`, `previewUrl`,
