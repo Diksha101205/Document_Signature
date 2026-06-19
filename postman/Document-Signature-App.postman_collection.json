@@ -393,14 +393,23 @@
       ]
     },
     {
-      "name": "Public Sign Signature",
+      "name": "Public Respond Accept Signature",
       "request": {
         "method": "POST",
-        "header": [],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"signed\"\n}"
+        },
         "url": {
-          "raw": "{{baseUrl}}/api/public/signatures/{{signingToken}}/sign",
+          "raw": "{{baseUrl}}/api/public/signatures/{{signingToken}}/respond",
           "host": ["{{baseUrl}}"],
-          "path": ["api", "public", "signatures", "{{signingToken}}", "sign"]
+          "path": ["api", "public", "signatures", "{{signingToken}}", "respond"]
         }
       },
       "event": [
@@ -412,6 +421,43 @@
               "if (pm.response.code === 200) {",
               "  const json = pm.response.json();",
               "  pm.test('signature status is signed', () => pm.expect(json.signature.status).to.eql('signed'));",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Respond Reject Signature",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"rejected\",\n  \"reason\": \"Document details need correction\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/public/signatures/{{signingToken}}/respond",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "public", "signatures", "{{signingToken}}", "respond"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('reject returns 200 or already completed', () => pm.expect([200, 409]).to.include(pm.response.code));",
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  pm.test('signature status is rejected', () => pm.expect(json.signature.status).to.eql('rejected'));",
+              "  pm.test('rejection reason is saved', () => pm.expect(json.signature.rejectionReason).to.be.a('string').and.not.empty);",
               "}"
             ],
             "type": "text/javascript"

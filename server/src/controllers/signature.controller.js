@@ -76,6 +76,8 @@ export const saveSignaturePosition = async (req, res) => {
     status: 'pending',
   })
 
+  await Document.findByIdAndUpdate(fileId, { status: 'pending' })
+
   res.status(201).json({
     message: 'Signature position saved successfully',
     signature,

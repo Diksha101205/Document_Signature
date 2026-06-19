@@ -246,3 +246,22 @@ POST /api/public/signatures/:token/sign
 GET /api/audit/:fileId
 Authorization: Bearer <token>
 ```
+
+## Day 11 Completed
+
+- Added signer response status flow: `pending`, `signed`, `rejected`
+- Added public accept/reject route with conditional validation
+- Stored rejection reason, rejection time, and rejection IP
+- Updated document status based on signature outcomes
+- Logged signed and rejected responses in the audit trail
+
+```http
+POST /api/public/signatures/:token/respond
+```
+
+```json
+{
+  "status": "rejected",
+  "reason": "Incorrect document details"
+}
+```

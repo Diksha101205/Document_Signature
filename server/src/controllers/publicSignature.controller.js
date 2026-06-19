@@ -8,13 +8,31 @@ const hashToken = (token) =>
 
 const normalizePath = (filePath) => filePath.replace(/\\/g, '/')
 
-export const getPublicSignatureRequest = async (req, res) => {
-  const tokenHash = hashToken(req.params.token)
-
-  const signature = await Signature.findOne({
-    signingTokenHash: tokenHash,
+const findSignatureByToken = (token) =>
+  Signature.findOne({
+    signingTokenHash: hashToken(token),
     signingTokenExpiresAt: { $gt: new Date() },
   }).populate('fileId')
+
+const updateDocumentStatusFromSignatures = async (document) => {
+  const signatures = await Signature.find({ fileId: document._id })
+
+  if (signatures.some((signature) => signature.status === 'rejected')) {
+    document.status = 'rejected'
+  } else if (
+    signatures.length > 0 &&
+    signatures.every((signature) => signature.status === 'signed')
+  ) {
+    document.status = 'signed'
+  } else {
+    document.status = 'pending'
+  }
+
+  await document.save()
+}
+
+export const getPublicSignatureRequest = async (req, res) => {
+  const signature = await findSignatureByToken(req.params.token)
 
   if (!signature || !signature.fileId) {
     return res.status(404).json({ message: 'Signature link is invalid or expired' })
@@ -51,47 +69,81 @@ export const getPublicSignatureRequest = async (req, res) => {
   })
 }
 
-export const signPublicSignatureRequest = async (req, res) => {
-  const tokenHash = hashToken(req.params.token)
-
-  const signature = await Signature.findOne({
-    signingTokenHash: tokenHash,
-    signingTokenExpiresAt: { $gt: new Date() },
-  }).populate('fileId')
+export const respondToPublicSignatureRequest = async (req, res) => {
+  const { status, reason = '' } = req.body
+  const nextStatus = status || 'signed'
+  const signature = await findSignatureByToken(req.params.token)
 
   if (!signature || !signature.fileId) {
     return res.status(404).json({ message: 'Signature link is invalid or expired' })
   }
 
-  if (signature.status === 'signed') {
-    return res.status(409).json({ message: 'Signature is already completed' })
+  if (!['signed', 'rejected'].includes(nextStatus)) {
+    return res.status(400).json({ message: 'Status must be signed or rejected' })
   }
 
-  signature.status = 'signed'
-  signature.signedAt = new Date()
-  signature.signedIpAddress = req.requestContext?.ipAddress
+  if (nextStatus === 'rejected' && !reason.trim()) {
+    return res.status(400).json({ message: 'Rejection reason is required' })
+  }
+
+  if (['signed', 'rejected'].includes(signature.status)) {
+    return res.status(409).json({
+      message: `Signature is already ${signature.status}`,
+    })
+  }
+
+  if (nextStatus === 'signed') {
+    signature.status = 'signed'
+    signature.signedAt = new Date()
+    signature.signedIpAddress = req.requestContext?.ipAddress
+  } else {
+    signature.status = 'rejected'
+    signature.rejectedAt = new Date()
+    signature.rejectedIpAddress = req.requestContext?.ipAddress
+    signature.rejectionReason = reason.trim()
+  }
+
   await signature.save()
+  await updateDocumentStatusFromSignatures(signature.fileId)
 
   await createAuditLog({
     document: signature.fileId._id,
     actorEmail: signature.signer.email,
-    action: 'signed',
+    action: nextStatus,
     req,
     metadata: {
       signatureId: signature._id,
       signedAt: signature.signedAt,
+      rejectedAt: signature.rejectedAt,
+      rejectionReason: signature.rejectionReason,
       access: 'public-token',
     },
   })
 
   res.status(200).json({
-    message: 'Signature completed successfully',
+    message:
+      nextStatus === 'signed'
+        ? 'Signature completed successfully'
+        : 'Signature rejected successfully',
     signature: {
       id: signature._id,
       signer: signature.signer,
       status: signature.status,
       signedAt: signature.signedAt,
       signedIpAddress: signature.signedIpAddress,
+      rejectedAt: signature.rejectedAt,
+      rejectedIpAddress: signature.rejectedIpAddress,
+      rejectionReason: signature.rejectionReason,
     },
   })
+}
+
+export const signPublicSignatureRequest = async (req, res) => {
+  req.body = { ...(req.body || {}), status: 'signed' }
+  return respondToPublicSignatureRequest(req, res)
+}
+
+export const rejectPublicSignatureRequest = async (req, res) => {
+  req.body = { ...(req.body || {}), status: 'rejected' }
+  return respondToPublicSignatureRequest(req, res)
 }

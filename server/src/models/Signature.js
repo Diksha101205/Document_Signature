@@ -57,6 +57,12 @@ const signatureSchema = new mongoose.Schema(
     },
     signedAt: Date,
     signedIpAddress: String,
+    rejectedAt: Date,
+    rejectedIpAddress: String,
+    rejectionReason: {
+      type: String,
+      trim: true,
+    },
     signingTokenHash: {
       type: String,
       unique: true,
