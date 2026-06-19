@@ -29,7 +29,34 @@ const demoDocuments = [
     createdAt: new Date(Date.now() - 86400000).toISOString(),
     previewUrl: '',
   },
+  {
+    id: 'demo-offer',
+    title: 'Offer Letter',
+    originalFileName: 'offer-letter.pdf',
+    fileSize: 154000,
+    status: 'signed',
+    createdAt: new Date(Date.now() - 172800000).toISOString(),
+    previewUrl: '',
+  },
+  {
+    id: 'demo-consent',
+    title: 'Consent Form',
+    originalFileName: 'consent-form.pdf',
+    fileSize: 136000,
+    status: 'rejected',
+    createdAt: new Date(Date.now() - 259200000).toISOString(),
+    previewUrl: '',
+  },
 ]
+
+const statusOptions = ['all', 'draft', 'pending', 'signed', 'rejected']
+
+const statusStyles = {
+  draft: 'bg-slate-100 text-slate-700 ring-slate-200',
+  pending: 'bg-amber-100 text-amber-800 ring-amber-200',
+  signed: 'bg-emerald-100 text-emerald-800 ring-emerald-200',
+  rejected: 'bg-rose-100 text-rose-800 ring-rose-200',
+}
 
 const formatFileSize = (size) => {
   if (!size) return '0 KB'
@@ -43,6 +70,30 @@ const formatDate = (date) =>
     timeStyle: 'short',
   }).format(new Date(date))
 
+function StatusBadge({ status }) {
+  return (
+    <span
+      className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ring-1 ${
+        statusStyles[status] || statusStyles.draft
+      }`}
+    >
+      {status}
+    </span>
+  )
+}
+
+function StatCard({ label, value, status }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-slate-500">{label}</p>
+        {status && <StatusBadge status={status} />}
+      </div>
+      <p className="mt-3 text-3xl font-bold text-ink">{value}</p>
+    </div>
+  )
+}
+
 function App() {
   const [token, setToken] = useState(localStorage.getItem('authToken') || '')
   const [documents, setDocuments] = useState(demoDocuments)
@@ -55,6 +106,7 @@ function App() {
   const [signerName, setSignerName] = useState('')
   const [signerEmail, setSignerEmail] = useState('')
   const [draftSignature, setDraftSignature] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('all')
 
   const hasLiveDocuments = documents.some((document) => document.previewUrl)
 
@@ -68,6 +120,14 @@ function App() {
         {}
       ),
     [documents]
+  )
+
+  const filteredDocuments = useMemo(
+    () =>
+      statusFilter === 'all'
+        ? documents
+        : documents.filter((document) => document.status === statusFilter),
+    [documents, statusFilter]
   )
 
   const fetchDocuments = async () => {
@@ -225,8 +285,8 @@ function App() {
 
   return (
     <main className="min-h-screen bg-slate-100 text-ink">
-      <section className="mx-auto w-full max-w-7xl px-5 py-6">
-        <nav className="mb-6 flex flex-col gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-center md:justify-between">
+      <section className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-5 sm:py-6">
+        <nav className="mb-6 flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-lg bg-trust text-lg font-bold text-white">
               DS
@@ -238,9 +298,9 @@ function App() {
               <h1 className="text-2xl font-bold">Documents Dashboard</h1>
             </div>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:min-w-[460px]">
             <input
-              className="h-11 min-w-72 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-trust"
+              className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-trust"
               onChange={(event) => setToken(event.target.value)}
               placeholder="Paste JWT token"
               type="password"
@@ -257,27 +317,24 @@ function App() {
           </div>
         </nav>
 
-        <div className="mb-6 grid gap-4 md:grid-cols-4">
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <p className="text-sm font-medium text-slate-500">Total files</p>
-            <p className="mt-2 text-3xl font-bold">{documents.length}</p>
-          </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <p className="text-sm font-medium text-slate-500">Draft</p>
-            <p className="mt-2 text-3xl font-bold">{statusCounts.draft || 0}</p>
-          </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <p className="text-sm font-medium text-slate-500">Pending</p>
-            <p className="mt-2 text-3xl font-bold">
-              {statusCounts.pending || 0}
-            </p>
-          </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <p className="text-sm font-medium text-slate-500">Signed</p>
-            <p className="mt-2 text-3xl font-bold">
-              {statusCounts.signed || 0}
-            </p>
-          </div>
+        <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <StatCard label="Total files" value={documents.length} />
+          <StatCard label="Draft" status="draft" value={statusCounts.draft || 0} />
+          <StatCard
+            label="Pending"
+            status="pending"
+            value={statusCounts.pending || 0}
+          />
+          <StatCard
+            label="Signed"
+            status="signed"
+            value={statusCounts.signed || 0}
+          />
+          <StatCard
+            label="Rejected"
+            status="rejected"
+            value={statusCounts.rejected || 0}
+          />
         </div>
 
         {error && (
@@ -293,25 +350,55 @@ function App() {
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <section className="rounded-lg border border-slate-200 bg-white">
-            <div className="border-b border-slate-100 px-5 py-4">
-              <h2 className="text-lg font-bold">Uploaded Documents</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Files returned from your protected document API.
-              </p>
+        <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
+          <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-100 px-4 py-4 sm:px-5">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <h2 className="text-lg font-bold">Uploaded Documents</h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Filter and open files returned from your protected API.
+                  </p>
+                </div>
+                <span className="text-sm font-semibold text-slate-500">
+                  {filteredDocuments.length} shown
+                </span>
+              </div>
+
+              <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+                {statusOptions.map((status) => {
+                  const isActive = statusFilter === status
+                  const count =
+                    status === 'all' ? documents.length : statusCounts[status] || 0
+
+                  return (
+                    <button
+                      className={`h-9 shrink-0 rounded-lg px-3 text-sm font-semibold capitalize transition ${
+                        isActive
+                          ? 'bg-trust text-white shadow-sm'
+                          : 'border border-slate-200 bg-white text-slate-600 hover:border-trust hover:text-trust'
+                      }`}
+                      key={status}
+                      onClick={() => setStatusFilter(status)}
+                      type="button"
+                    >
+                      {status} ({count})
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
-            <div className="divide-y divide-slate-100">
-              {documents.length === 0 && (
+            <div className="max-h-[680px] divide-y divide-slate-100 overflow-y-auto">
+              {filteredDocuments.length === 0 && (
                 <div className="p-6 text-sm text-slate-500">
-                  No documents uploaded yet.
+                  No documents match this status.
                 </div>
               )}
 
-              {documents.map((document) => (
+              {filteredDocuments.map((document) => (
                 <button
-                  className={`block w-full px-5 py-4 text-left transition hover:bg-slate-50 ${
+                  className={`block w-full px-4 py-4 text-left transition hover:bg-slate-50 sm:px-5 ${
                     selectedDocument?.id === document.id ? 'bg-blue-50' : ''
                   }`}
                   key={document.id}
@@ -330,9 +417,7 @@ function App() {
                         {document.originalFileName}
                       </p>
                     </div>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold capitalize text-slate-600">
-                      {document.status}
-                    </span>
+                    <StatusBadge status={document.status} />
                   </div>
                   <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
                     <span>{formatFileSize(document.fileSize)}</span>
@@ -343,14 +428,17 @@ function App() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white">
-            <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <div className="flex flex-col gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
               <div>
-                <h2 className="text-lg font-bold">PDF Preview</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  {selectedDocument
-                    ? selectedDocument.originalFileName
-                    : 'Select a file'}
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg font-bold">PDF Preview</h2>
+                  {selectedDocument && (
+                    <StatusBadge status={selectedDocument.status} />
+                  )}
+                </div>
+                <p className="mt-1 break-all text-sm text-slate-500">
+                  {selectedDocument ? selectedDocument.originalFileName : 'Select a file'}
                 </p>
               </div>
               {selectedDocument?.previewUrl && (
@@ -365,7 +453,7 @@ function App() {
               )}
             </div>
 
-            <div className="grid gap-3 border-b border-slate-100 px-5 py-4 lg:grid-cols-[1fr_1fr_auto_auto]">
+            <div className="grid gap-3 border-b border-slate-100 px-4 py-4 sm:px-5 lg:grid-cols-[1fr_1fr_auto_auto]">
               <input
                 className="h-10 rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-trust"
                 onChange={(event) => setSignerName(event.target.value)}
@@ -399,9 +487,9 @@ function App() {
               </button>
             </div>
 
-            <div className="min-h-[620px] bg-slate-200 p-4">
+            <div className="min-h-[520px] bg-slate-200 p-3 sm:min-h-[620px] sm:p-4">
               {selectedDocument?.previewUrl ? (
-                <div className="mx-auto flex max-w-3xl justify-center overflow-auto rounded-lg bg-white p-4">
+                <div className="mx-auto flex max-w-3xl justify-center overflow-auto rounded-lg bg-white p-3 sm:p-4">
                   <PdfDocument
                     file={selectedDocument.previewUrl}
                     loading={
@@ -461,7 +549,7 @@ function App() {
                   </PdfDocument>
                 </div>
               ) : (
-                <div className="grid min-h-[560px] place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+                <div className="grid min-h-[480px] place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center sm:min-h-[560px] sm:p-8">
                   <div>
                     <p className="text-lg font-bold text-slate-700">
                       Preview appears after live documents load

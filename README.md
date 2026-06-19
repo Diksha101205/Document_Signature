@@ -265,3 +265,10 @@ POST /api/public/signatures/:token/respond
   "reason": "Incorrect document details"
 }
 ```
+
+## Day 12 Completed
+
+- Added dashboard filtering by document/signature status
+- Added reusable status badges and statistic cards
+- Improved responsive Tailwind dashboard layout
+- Polished document list and PDF preview panels for mobile and desktop
